@@ -8,7 +8,7 @@ This example sets up several Geode instances each with 1 locator and 2 servers. 
 1. Download and install Apache Geode and its requirements.
 2. Make sure you have `gfsh` in the PATH so the scripts can just run the command `gfsh`.
 3. cd into the scripts directory
-3. `./startGeode 5`  This will launch five Geode distributed systems.   The number of systems can be any number over 2.
+3. `./startGeode 5`  This will launch five Geode distributed systems.   The number of systems can be equal to or greater 2.
 4. `./configureMesh 5`  This will configure those five Geode systems into a mesh network where every distributed system is connnected to every other distributed system.
 5. `./putRandomThenGetOnAll 5`  A simple gfh client that looks at the value of a key on each system - does a put on that key with a value of which system did the put and time stamp - then looks at the value on each system for that same key.
 6. `./shutdownGeode 5` - Cleanly shutdown all of the systems.
