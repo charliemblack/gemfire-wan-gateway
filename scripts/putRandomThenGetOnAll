@@ -1,0 +1,44 @@
+#!/bin/bash
+
+numberRegExp='^[0-9]+$'
+
+if ! [[ ${1} =~ ${numberRegExp} ]] ; then
+    echo "Please use a number as an argument.   This number will be the number of Geode Systems configured in the test."
+    exit 1
+fi
+if ! (( ${1} > 1 )) ; then
+  echo "Please use more then 1 system in the example."
+  exit 1
+fi
+numberOfHosts=${1}
+
+function getMyKeyAllHosts() {
+  for (( i=1; i<=${numberOfHosts}; i++ )) ; do
+    echo " Looking up key value on distributed system $i"
+    gfsh -e "connect --locator=localhost[1033${i}]" -e "get --key=myKey --region=test" | egrep "^\b(Key|Value)\b[[:space:]]+:" | (paste /dev/null -)
+  done
+}
+echo ===========================================================================
+echo Get all of the values from all of the Systems
+echo ===========================================================================
+
+getMyKeyAllHosts
+
+randomLocator=$(( $RANDOM % ${1} + 1))
+
+currDate=`date`
+echo ===========================================================================
+echo Inserting $currDate on a random distributed system $randomLocator
+echo ===========================================================================
+
+currValue="Insert from distributed system ${randomLocator} on ${currDate}"
+
+gfsh -e "connect --locator=localhost[1033${randomLocator}]" -e "put --key=myKey --value='${currValue}' --region=test" | egrep "^(\(2\)|\(1\))" | (paste /dev/null -)
+
+echo ===========================================================================
+echo Done - Now sleeping to allow the queue to flush.  The default asynchronous
+echo gateway queue setting is 1000 ms or 100 events which ever comes first.
+echo ===========================================================================
+sleep 1
+
+getMyKeyAllHosts

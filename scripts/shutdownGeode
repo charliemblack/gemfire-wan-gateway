@@ -1,0 +1,17 @@
+#!/bin/bash
+
+numberRegExp='^[0-9]+$'
+
+if ! [[ ${1} =~ ${numberRegExp} ]] ; then
+    echo "Please use a number as an argument.   This number will be the number of Geode Systems to shutdown."
+    exit 1
+fi
+if ! (( ${1} > 1 )) ; then
+  echo "Please use more then 1 system in the example."
+  exit 1
+fi
+for (( i=1; i<=${1}; i++ )) ; do
+  gfsh -e "connect --locator=localhost[1033${i}]" -e "shutdown --include-locators=true" > /dev/null &
+done
+
+wait

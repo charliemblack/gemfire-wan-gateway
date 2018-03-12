@@ -1,0 +1,82 @@
+#!/bin/bash
+
+numberRegExp='^[0-9]+$'
+
+if ! [[ ${1} =~ ${numberRegExp} ]] ; then
+    echo "Please use a number as an argument.   This number will be the number of Geode Systems Launched."
+    exit 1
+fi
+if ! (( ${1} > 1 )) ; then
+  echo "Please use more then 1 system in the example."
+  exit 1
+fi
+
+# Attempt to set APP_HOME
+# Resolve links: $0 may be a link
+PRG="$0"
+# Need this for relative symlinks.
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
+done
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/.." >&-
+APP_HOME="`pwd -P`"
+cd "$SAVED" >&-
+
+DEFAULT_LOCATOR_MEMORY="--initial-heap=128m --max-heap=128m"
+DEFAULT_SERVER_MEMORY="--initial-heap=1g --max-heap=1g"
+DEFAULT_JVM_OPTS=" --J=-XX:+UseParNewGC"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+UseConcMarkSweepGC"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:CMSInitiatingOccupancyFraction=50"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+CMSParallelRemarkEnabled"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+UseCMSInitiatingOccupancyOnly"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+ScavengeBeforeFullGC"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+CMSScavengeBeforeRemark"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+UseCompressedOops"
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --mcast-port=0"
+
+tmpstart=0;
+tmpend=4;
+
+function launchGeode() {
+  local remoteLocators=${1}
+  local systemId=${2}
+
+  echo "Launching system ${systemId} with remote locators : ${remoteLocators}"
+
+  mkdir -p ${APP_HOME}/data/site${systemId}/locator
+  mkdir -p ${APP_HOME}/data/site${systemId}/server1
+  mkdir -p ${APP_HOME}/data/site${systemId}/server2
+
+  gfsh -e "start locator ${DEFAULT_LOCATOR_MEMORY} ${DEFAULT_JVM_OPTS} --J=-Dgemfire.remote-locators=${remoteLocators} --name=locator --J=-Dgemfire.distributed-system-id=${systemId} --port=1033${systemId} --J=-Dgemfire.jmx-manager-port=109${systemId} --http-service-port=707${systemId} --dir=${APP_HOME}/data/site${systemId}/locator" | egrep "^Locator in" | (paste /dev/null -)
+
+  gfsh -e "connect --locator=localhost[1033${systemId}]" -e "start server ${DEFAULT_SERVER_MEMORY} ${DEFAULT_JVM_OPTS} --J=-Dgemfire.remote-locators=${remoteLocators} --name=server1 --locators=localhost[1033${systemId}] --J=-Dgemfire.distributed-system-id=${systemId} --dir=${APP_HOME}/data/site${systemId}/server1 --server-port=0" | egrep "^Server in" | (paste /dev/null -) &
+  local server1=$!
+  gfsh -e "connect --locator=localhost[1033${systemId}]" -e "start server ${DEFAULT_SERVER_MEMORY} ${DEFAULT_JVM_OPTS} --J=-Dgemfire.remote-locators=${remoteLocators} --name=server2 --locators=localhost[1033${systemId}] --J=-Dgemfire.distributed-system-id=${systemId} --dir=${APP_HOME}/data/site${systemId}/server2 --server-port=0" | egrep "^Server in" | (paste /dev/null -) &
+  local server2=$!
+
+  wait ${server1}
+  wait ${server2}
+}
+
+for (( i=1; i<=${1}; i++ )) ; do
+  remoteLocators=
+  for (( j=1; j<=${1}; j++ )) ; do
+    if (( $j != $i )) ; then
+      if ! [ -z "$remoteLocators" ] ; then
+        remoteLocators="${remoteLocators},localhost[1033${j}]"
+      else
+        remoteLocators="localhost[1033${j}]"
+      fi
+    fi
+  done
+  launchGeode ${remoteLocators} ${i} &
+done
+
+wait
