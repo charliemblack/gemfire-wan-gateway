@@ -138,3 +138,12 @@ voltron:scripts cblack$ ./shutdownGeode 5
 voltron:scripts cblack$
 
 ```
+
+# Directory
+```
+└── scripts
+    ├── configureMesh - Create the wan gateway to each member and configure a region for the data to live.
+    ├── putRandomThenGetOnAll - A sample to drive the demo.
+    ├── shutdownGeode - Shutdown all of the members in all of the distributed systems.
+    └── startGeode - Start up all of the distributed systems in the demo.
+```
