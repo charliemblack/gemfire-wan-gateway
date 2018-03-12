@@ -141,6 +141,11 @@ voltron:scripts cblack$
 
 # Directory
 ```
+.
+├── LICENSE.txt - Apache License
+├── data - This is where all of the data and logs go.
+├── images - Images for the readme.md
+├── readme.md - this document
 └── scripts
     ├── configureMesh - Create the wan gateway to each member and configure a region for the data to live.
     ├── putRandomThenGetOnAll - A sample to drive the demo.
