@@ -36,6 +36,8 @@ That distributed system id is `5` and it is connected to 4 other distributed sys
 
 ## Sample run:
 
+NOTE:  The scripts are multithreaded - so the output could be out of order.
+
 ```
 voltron:scripts cblack$ ./startGeode 5
 Launching system 1 with remote locators : localhost[10332],localhost[10333],localhost[10334],localhost[10335]
