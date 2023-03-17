@@ -3,7 +3,7 @@
 numberRegExp='^[0-9]+$'
 
 if ! [[ ${1} =~ ${numberRegExp} ]] ; then
-    echo "Please use a number as an argument.   This number will be the number of Geode Systems Launched."
+    echo "Please use a number as an argument.   This number will be the number of GemFire Systems Launched."
     exit 1
 fi
 if ! (( ${1} > 1 )) ; then
@@ -31,20 +31,11 @@ cd "$SAVED" >&-
 
 DEFAULT_LOCATOR_MEMORY="--initial-heap=128m --max-heap=128m"
 DEFAULT_SERVER_MEMORY="--initial-heap=1g --max-heap=1g"
-DEFAULT_JVM_OPTS=" --J=-XX:+UseParNewGC"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+UseConcMarkSweepGC"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:CMSInitiatingOccupancyFraction=50"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+CMSParallelRemarkEnabled"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+UseCMSInitiatingOccupancyOnly"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+ScavengeBeforeFullGC"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+CMSScavengeBeforeRemark"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --J=-XX:+UseCompressedOops"
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS --mcast-port=0"
 
 tmpstart=0;
 tmpend=4;
 
-function launchGeode() {
+function launchGemFire() {
   local remoteLocators=${1}
   local systemId=${2}
 
@@ -76,7 +67,7 @@ for (( i=1; i<=${1}; i++ )) ; do
       fi
     fi
   done
-  launchGeode ${remoteLocators} ${i} &
+  launchGemFire ${remoteLocators} ${i} &
 done
 
 wait
