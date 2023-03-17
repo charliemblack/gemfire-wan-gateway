@@ -33,7 +33,6 @@ gfsh>connect --locator=localhost[10335]
 
 That distributed system id is `5` and it is connected to 4 other distributed systems with IDs `1`, `2`, `3` and `4`.
 
-
 ## Sample run:
 
 NOTE:  The scripts are multithreaded - so the output could be out of order.
